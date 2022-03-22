@@ -1,1 +1,1 @@
-from .bcpao import BCPAODataFetcher   # noqa: F401
+from .bcpao import BCPAODataFetcher  # noqa: F401

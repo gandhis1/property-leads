@@ -1,0 +1,3 @@
+# TODO: If/when flake8 finally supports pyproject.toml, move this file's contents into that
+[flake8]
+max-line-length = 120

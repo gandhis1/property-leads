@@ -4,12 +4,10 @@ import aiohttp
 
 from property_leads import BCPAODataFetcher
 
-
 # TODO: Scrape Palm Bay permit web site "https://pay.palmbayflorida.org/Click2GovBP/index.html"
 # TODO: Scrape property tax billing web site "https://brevard.county-taxes.com/public/real_estate/parcels/2836346"
 # TODO: Scrape tax lien auction web site "https://www.brevard.realforeclose.com/index.cfm?zaction=USER&zmethod=CALENDAR"
 # TODO: Write some unit tests
-# TODO: Setup a Github actions workflow to run isort, black, mypy, and flake8, and run tests
 
 
 async def main() -> None:

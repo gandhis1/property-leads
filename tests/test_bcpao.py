@@ -1,6 +1,7 @@
+from typing import Any
+
 import aiohttp
 import pytest_asyncio
-from typing import Any
 
 from property_leads import BCPAODataFetcher
 

@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 import aiohttp
-import pandas as pd
 
 
 @dataclass
@@ -59,7 +58,7 @@ class BCPAODataFetcher:
             response_json = await response.json()
 
             sales_history = response_json.get("salesHistory", [{}])
-            sale_date = pd.to_datetime(sales_history[0].get("saleDate")).date()
+            sale_date = datetime.fromisoformat(sales_history[0].get("saleDate")).date()
             sale_price = sales_history[0].get("salePrice")
             value_summary = response_json.get("valueSummary", [{}])
             assessed_value = value_summary[0].get("marketVal")
@@ -111,7 +110,7 @@ class BCPAODataFetcher:
                 num_buildings=num_buildings,
                 base_area=base_area,
                 sub_area=sub_area,
-                year_built=sum(year_built) / len(year_built),
+                year_built=sum(year_built) // len(year_built),
                 exterior_wall="/".join(exterior_wall) or None,
                 frame="/".join(frame) or None,
                 roof="/".join(roof) or None,
