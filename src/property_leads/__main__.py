@@ -2,7 +2,7 @@ import asyncio
 
 import aiohttp
 
-from bcpao import BCPAODataFetcher
+from property_leads import BCPAODataFetcher
 
 
 # TODO: Scrape Palm Bay permit web site "https://pay.palmbayflorida.org/Click2GovBP/index.html"

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [tool.isort]
 profile = "black"
 
@@ -6,3 +10,6 @@ line-length = 120
 
 [tool.mypy]
 strict = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
