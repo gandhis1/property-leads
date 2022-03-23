@@ -6,20 +6,20 @@ import aiohttp
 
 
 @dataclass
-class BCPAOAccount:
+class BCPAOAccountInfo:
     account: int
     site_address: str
     parcel_id: str
-    acreage: int
+    acreage: float
     zoning: str
     owners: str
     sale_date: Optional[date]
     sale_price: Optional[float]
     assessed_value: Optional[float]
     num_buildings: int
-    base_area: int
-    sub_area: int
-    year_built: int
+    base_area: Optional[int]
+    sub_area: Optional[int]
+    year_built: Optional[int]
     exterior_wall: Optional[str]
     frame: Optional[str]
     roof: Optional[str]
@@ -50,30 +50,32 @@ class BCPAODataFetcher:
     async def find_matching_accounts(self, address: str, limit: int = 10) -> List[int]:
         search_url = self.SEARCH_URL_TEMPLATE.format(address=address, limit=limit)
         async with self.session.get(search_url, raise_for_status=True) as response:
-            return [account_json["account"] for account_json in await response.json()]
+            return [int(account_json["account"]) for account_json in await response.json()]
 
-    async def get_account_info(self, account: int) -> BCPAOAccount:
+    async def get_account_info(self, account: int) -> BCPAOAccountInfo:
         account_url = self.ACCOUNT_URL_TEMPLATE.format(account=account)
         async with self.session.get(account_url, raise_for_status=True) as response:
             response_json = await response.json()
 
-            sales_history = response_json.get("salesHistory", [{}])
-            sale_date = datetime.fromisoformat(sales_history[0].get("saleDate")).date()
+            sales_history = response_json.get("salesHistory") or [{}]
+            sale_date_str = sales_history[0].get("saleDate")
+            sale_date = datetime.fromisoformat(sale_date_str).date() if sale_date_str else None
             sale_price = sales_history[0].get("salePrice")
-            value_summary = response_json.get("valueSummary", [{}])
+            value_summary = response_json.get("valueSummary") or [{}]
             assessed_value = value_summary[0].get("marketVal")
+            buildings = response_json.get("buildings") or []
 
             num_buildings = 0
             year_built: List[int] = []
-            base_area = 0
-            sub_area = 0
+            base_area = None
+            sub_area = None
             exterior_wall: List[str] = []
             frame: List[str] = []
             roof: List[str] = []
             roof_structure: List[str] = []
             has_pool = False
             has_fireplace = False
-            for building in response_json["buildings"]:
+            for building in buildings:
                 num_buildings += 1
                 base_area += building["totalBaseArea"]
                 sub_area += building["totalSubArea"]
@@ -96,12 +98,15 @@ class BCPAODataFetcher:
                         has_pool = True
                     elif "FIREPLACE" in efi["description"]:
                         has_fireplace = True
+            average_year_built = sum(year_built) // len(year_built) if year_built else None
+            base_area = base_area or None
+            sub_area = sub_area or None
 
-            return BCPAOAccount(
-                account=response_json["account"],
+            return BCPAOAccountInfo(
+                account=int(response_json["account"]),
                 site_address=response_json["siteAddress"],
                 parcel_id=response_json["parcelID"],
-                acreage=response_json["acreage"],
+                acreage=float(response_json["acreage"]),
                 zoning=response_json["propertyUse"],
                 owners=response_json["owner"],
                 sale_date=sale_date,
@@ -110,7 +115,7 @@ class BCPAODataFetcher:
                 num_buildings=num_buildings,
                 base_area=base_area,
                 sub_area=sub_area,
-                year_built=sum(year_built) // len(year_built),
+                year_built=average_year_built,
                 exterior_wall="/".join(exterior_wall) or None,
                 frame="/".join(frame) or None,
                 roof="/".join(roof) or None,
