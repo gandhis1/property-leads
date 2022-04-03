@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - "**.py"
+      - "**requirements*.txt"
 
 jobs:
   run-ci-workflow:
