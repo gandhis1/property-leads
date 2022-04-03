@@ -6,7 +6,33 @@ on:
       - "**requirements*.txt"
 
 jobs:
-  run-ci-workflow:
+  run-ci-static-analysis:
+    runs-on: ubuntu-latest
+    env:
+      python-version: 3.10.3
+      architecture: x64
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ env.python-version }} ${{ env.architecture }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.python-version }}
+          architecture: ${{ env.architecture }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run black formatter check
+        run: black --check --diff --color ./src 
+      - name: Run flake8 linter
+        run: flake8 ./src --count --statistics
+      - name: Run mypy static type checking
+        run: mypy ./src
+      - name: Run isort import order check
+        run: isort ./src --check-only
+  run-ci-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -44,14 +70,6 @@ jobs:
       - name: Install package wheels
         run: pip install dist/*.whl
         shell: bash
-      - name: Run black formatter check
-        run: black --check --diff --color ./src 
-      - name: Run flake8 linter
-        run: flake8 ./src --count --statistics
-      - name: Run mypy static type checking
-        run: mypy ./src
-      - name: Run isort import order check
-        run: isort ./src --check-only
       - name: Run unit tests with pytest
         run: |
           pytest ./tests -v
