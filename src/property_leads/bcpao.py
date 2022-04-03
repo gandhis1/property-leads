@@ -77,8 +77,10 @@ class BCPAODataFetcher:
             has_fireplace = False
             for building in buildings:
                 num_buildings += 1
-                base_area += building["totalBaseArea"]
-                sub_area += building["totalSubArea"]
+                if building["totalBaseArea"]:
+                    base_area = (base_area or 0) + building["totalBaseArea"]
+                if building["totalSubArea"]:
+                    sub_area = (sub_area or 0) + building["totalSubArea"]
                 year_built.append(building["yearBuilt"])
 
                 construction_info = building.get("constructionInfo", {})
